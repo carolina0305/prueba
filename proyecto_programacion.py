@@ -1,4 +1,3 @@
-
 class Tienda:
 
     def __init__(self,ubicacion,trabajadores,nombre,horario=False):
@@ -76,7 +75,7 @@ boton_delete.grid(row=2, column=3, padx=10, pady=10)
 
 # --- Lista de Tareas ---
 etiqueta_lista.grid(row=3, column=0, padx=10, pady=5, sticky="w")
-lista_tareas.grid(row=4, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
+lista_productos.grid(row=4, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
 
 
 # 4. Iniciar el bucle de la aplicación
@@ -94,8 +93,4 @@ etiqueta_nombre = tk.Label(ventana, text="Nombre:ventana2.py")
 # La colocamos en la fila 0, columna 0
 etiqueta_nombre.grid(row=0, column=0)
 
-ventana.mainloop()  # Mantiene la ventana abierta y a la espera de acciones
-
-
-
-
+ventana.mainloop()  # Mantiene la ventana abierta y a la espera de acciones º
