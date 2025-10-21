@@ -28,8 +28,8 @@ print(f"ubicacaion: {tienda2.ubicacion}")
 print(f"trabajadores: {tienda2.trabajadores}")
 print(f"nombre: {tienda2.nombre}")
 print(f"horario: {tienda2.horario}")
-
 import tkinter as tk
+
 
 # 1. Ventana principal
 ventana = tk.Tk()
@@ -48,13 +48,17 @@ campo_nomb = tk.Entry(ventana)
 etiqueta_ubic = tk.Label(ventana, text="Ubicación")
 campo_ubic = tk.Entry(ventana)
 
+etiqueta_trab = tk.Label(ventana, text="Trabajadores:")
+campo_trab = tk.Entry(ventana)
+
+
 # --- Botones ---
 boton_add = tk.Button(ventana, text="Añadir tienda favorita")
 boton_update = tk.Button(ventana, text="Modificar tienda favorita")
 boton_delete = tk.Button(ventana, text="Eliminar tienda favorita")
 
 # --- Lista de Tareas ---
-etiqueta_lista = tk.Label(ventana, text="Productos")
+etiqueta_lista = tk.Label(ventana, text="Tiendas")
 lista_productos = tk.Listbox(ventana, width=60, height=10)
 
 # 3. Posicionamiento con Grid
@@ -67,6 +71,9 @@ campo_nomb.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
 
 etiqueta_ubic.grid(row=1, column=2, padx=10, pady=5, sticky="w")
 campo_ubic.grid(row=1, column=3, padx=10, pady=5, sticky="ew")
+
+etiqueta_trab.grid(row=0, column=2, padx=10, pady=5, sticky="w")
+campo_trab.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
 
 # --- Botones ---
 boton_add.grid(row=2, column=1, padx=10, pady=10)
@@ -94,3 +101,7 @@ etiqueta_nombre = tk.Label(ventana, text="Nombre:ventana2.py")
 etiqueta_nombre.grid(row=0, column=0)
 
 ventana.mainloop()  # Mantiene la ventana abierta y a la espera de acciones º
+
+
+
+
