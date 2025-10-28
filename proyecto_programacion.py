@@ -51,9 +51,14 @@ campo_ubic = tk.Entry(ventana)
 etiqueta_trab = tk.Label(ventana, text="Trabajadores:")
 campo_trab = tk.Entry(ventana)
 
+# Botón de Avril
+
+def insertar():
+    print("Insertando tienda a la lista")
+
 
 # --- Botones ---
-boton_add = tk.Button(ventana, text="Añadir tienda favorita")
+boton_add = tk.Button(ventana, text="Añadir tienda favorita, command=insertar)")
 boton_update = tk.Button(ventana, text="Modificar tienda favorita")
 boton_delete = tk.Button(ventana, text="Eliminar tienda favorita")
 
@@ -87,21 +92,4 @@ lista_productos.grid(row=4, column=0, columnspan=4, padx=10, pady=5, sticky="nse
 
 # 4. Iniciar el bucle de la aplicación
 ventana.mainloop()
-
-
-import tkinter as tk  # Importamos la librería
-
-ventana = tk.Tk()  # Creamos la ventana principal
-ventana.title("ventana2.py")  # Le ponemos un título
-
-# Creamos una etiqueta
-etiqueta_nombre = tk.Label(ventana, text="Nombre:ventana2.py")
-
-# La colocamos en la fila 0, columna 0
-etiqueta_nombre.grid(row=0, column=0)
-
-ventana.mainloop()  # Mantiene la ventana abierta y a la espera de acciones º
-
-
-
 
