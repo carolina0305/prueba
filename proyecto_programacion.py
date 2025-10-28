@@ -58,7 +58,7 @@ def insertar():
 
 
 # --- Botones ---
-boton_add = tk.Button(ventana, text="Añadir tienda favorita, command=insertar)")
+boton_add = tk.Button(ventana, text="Añadir tienda favorita", command=insertar)
 boton_update = tk.Button(ventana, text="Modificar tienda favorita")
 boton_delete = tk.Button(ventana, text="Eliminar tienda favorita")
 
