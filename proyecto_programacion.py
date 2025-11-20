@@ -132,7 +132,6 @@ class App:
 
 
 
-
         # 'IF NOT EXISTS' evita que nos dé un error si la tabla ya ha sido creada
         cursor.execute(comando_sql)
 
@@ -169,8 +168,76 @@ frame_botones.pack()    # Se apila debajo del anterior
 frame_lista.pack(fill=tk.BOTH, expand=True) 
 
 # AHORA, al crear los widgets, los asignamos a su frame correspondiente
-self.etiqueta_desc = tk.Label(frame_formulario, text="Descripción:")
+self.etiqueta_desc = tk.Label(frame_formulario, text="Nombre:")
 
 # Y usamos .grid() para posicionarlos DENTRO de ese frame
 self.etiqueta_desc.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
+
+
+
+# Dentro de __init__ en la clase App
+
+# --- Conexión a la Base de Datos ---
+self.conexion = sqlite3.connect('tareas.db')
+self.cursor = self.conexion.cursor()
+self.crear_tabla()
+
+# ... (resto de la clase) ...
+
+    def crear_tabla(self):
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Tarea (
+            id INTEGER PRIMARY KEY,
+            nombre TEXT NOT NULL,
+            horario TEXT,
+            ubicación TEXT,
+            completada INTEGER DEFAULT 0
+        )
+        """)
+        self.conexion.commit()
+
+# En __init__, conectamos el botón:
+self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.añadir_tienda)
+
+# ... (resto de la clase) ...
+
+    def añadir_tarea(self):
+        # .get() es el método para obtener el texto de un widget Entry
+        nombre = self.campo_desc.get()
+        horario = self.campo_fecha.get()
+        ubicación = self.campo_prio.get()
+
+        # Usamos 'if' para validar que el nombre no esté vacío
+        if desc:
+            self.cursor.execute("INSERT INTO Tienda (nombre, horario, ubicación) VALUES (?, ?, ?)",
+                              (nombre, horario, ubicación))
+            self.conexion.commit()
+            self.actualizar_lista() # Actualizamos la lista para que se vea la nueva tarea
+        else:
+            print("Error: El nombre no puede estar vacío.") # Más adelante usaremos messagebox
+
+
+# ... (dentro de la clase App) ...
+
+    def actualizar_lista(self):
+        # Primero, borramos todos los elementos que haya en la lista
+        self.lista_tareas.delete(0, tk.END)
+        
+        # Obtenemos las tareas de la BD (id, nombre, completada)
+        self.cursor.execute("SELECT id, nombre, completada FROM Tienda ORDER BY horario")
+        tienda = self.cursor.horario() # Esto nos devuelve una lista de tuplas
+        
+        # Usamos un bucle 'for' para recorrer cada tarea de la lista 'tiendas'
+        for tienda in tiendas:
+            # Desempaquetamos la tupla en variables individuales
+            id_tienda, nombre_tienda, completada_tienda = tienda
+            
+            estado = "[x]" if completada_tienda else "[ ]"
+            texto_lista = f"{id_tienda}: {estado} {nombre_tienda}"
+            
+            # .insert() añade un elemento al final de la Listbox
+            self.lista_tiendas.insert(tk.END, texto_lista)
+
+# No olvides llamar a este método al final del __init__ para cargar las tareas al abrir la app
+# self.actualizar_lista()
