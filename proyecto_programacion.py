@@ -185,7 +185,7 @@ self.crear_tabla()
 
 # ... (resto de la clase) ...
 
-    def crear_tabla(self):
+def crear_tabla(self):
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS Tarea (
             id INTEGER PRIMARY KEY,
@@ -202,7 +202,7 @@ self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.a�
 
 # ... (resto de la clase) ...
 
-    def añadir_tarea(self):
+def añadir_tarea(self):
         # .get() es el método para obtener el texto de un widget Entry
         nombre = self.campo_desc.get()
         horario = self.campo_fecha.get()
@@ -220,9 +220,9 @@ self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.a�
 
 # ... (dentro de la clase App) ...
 
-    def actualizar_lista(self):
+def actualizar_lista(self):
         # Primero, borramos todos los elementos que haya en la lista
-        self.lista_tareas.delete(0, tk.END)
+        self.lista_tiendas.delete(0, tk.END)
         
         # Obtenemos las tareas de la BD (id, nombre, completada)
         self.cursor.execute("SELECT id, nombre, completada FROM Tienda ORDER BY horario")
@@ -241,3 +241,108 @@ self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.a�
 
 # No olvides llamar a este método al final del __init__ para cargar las tareas al abrir la app
 # self.actualizar_lista()
+
+
+# ... (dentro de la clase App) ...
+
+def limpiar_campos(self):
+        self.campo_nombre.delete(0, tk.END)
+        self.campo_horario.delete(0, tk.END)
+        self.campo_ubicación.delete(0, tk.END)
+        self.lista_tiendas.selection_clear(0, tk.END)
+
+
+
+
+# En __init__, al crear la Listbox, añadimos esta línea:
+self.lista_tiendas.bind('<<ListboxSelect>>', self.cargar_tienda_seleccionada)
+
+# Este método auxiliar nos devuelve el ID de la tarea seleccionada
+def get_id_seleccionado(self):
+    try:
+        # curselection() devuelve la posición del elemento seleccionado
+        seleccionado = self.lista_tiendas.get(self.lista_tiendas.curselection())
+        # Partimos el texto (ej: "1: [ ] Tarea") por los ":" y cogemos la primera parte
+        id_tienda = int(seleccionado.split(":")[0])
+        return id_tienda  # Devolvemos el ID encontrado
+    except (tk.TclError, IndexError, ValueError):
+        # Si hay un error, devolvemos None
+        return None
+
+
+def cargar_tienda_seleccionada(self, event):
+    # Llamamos a nuestro método y guardamos el valor que nos devuelve en una variable
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda: # Si id_tarea no es None...
+        # Pedimos a la BD los datos de la tarea con ese ID
+        self.cursor.execute("SELECT nombre, horario, ubicación FROM Tienda WHERE id = ?", (id_tienda,))
+        tienda = self.cursor.fetchone() # fetchone() nos devuelve solo la primera fila encontrada
+        if tarea:
+            desc, fecha, prio = tarea
+            # Primero borramos el contenido actual de los campos
+            self.campo_nombre.delete(0, tk.END)
+            self.campo_horario.delete(0, tk.END)
+            self.campo_ubicación.delete(0, tk.END)
+            # Y luego insertamos el nuevo texto
+            self.campo_nombre.insert(0, nombre)
+            self.campo_horario.insert(0, horario)
+            self.campo_ubicación.insert(0, ubicación)
+
+# En __init__, conectamos el botón:
+self.boton_delete = tk.Button(frame_botones, text="Eliminar Tienda", command=self.eliminar_tienda)
+
+# ... (resto de la clase) ...
+
+def eliminar_tienda(self):
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda:
+        # Usamos messagebox.askyesno para mostrar una ventana de confirmación
+        if messagebox.askyesno("Confirmar Borrado", f"¿Estás seguro de que quieres eliminar la tienda {id_tienda}?"):
+            self.cursor.execute("DELETE FROM Tienda WHERE id = ?", (id_tienda,))
+            self.conexion.commit()
+            self.limpiar_campos()
+            self.actualizar_lista()
+    else:
+        messagebox.showinfo("Sin Selección", "Por favor, selecciona una tienda para eliminar.")
+
+
+
+
+def modificar_tienda(self):
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda:
+        nombre = self.campo_nombre.get()
+        if nombrec: # Validamos que la descripción no esté vacía
+            horario = self.campo_horario.get()
+            ubicación = self.campo_ubicación.get()
+            self.cursor.execute("UPDATE Tienda SET nombre = ?, horario = ?, ubicación = ? WHERE id = ?",
+                              (nombre, horario, ubicación, id_tienda))
+            self.conexion.commit()
+            self.limpiar_campos()
+            self.actualizar_lista()
+        else:
+            messagebox.showwarning("Campo Vacío", "El nombre no puede estar vacío.")
+    else:
+        messagebox.showinfo("Sin Selección", "Por favor, selecciona una tienda para modificar.")
+
+
+
+
+def marcar_completada(self):
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda:
+        # 1. Obtenemos el estado actual de la tarea
+        self.cursor.execute("SELECT completada FROM Tienda WHERE id = ?", (id_tienda,))
+        estado_actual = self.cursor.fetchone()[0]
+        
+        # 2. Calculamos el nuevo estado (si era 0 se convierte en 1, y si era 1 se convierte en 0)
+        nuevo_estado = 1 if estado_actual == 0 else 0
+        
+        # 3. Actualizamos la base de datos con el nuevo estado
+        self.cursor.execute("UPDATE Tienda SET completada = ? WHERE id = ?", (nuevo_estado, id_tienda))
+        self.conexion.commit()
+        
+        # 4. Actualizamos la lista para que se vea el cambio
+        self.actualizar_lista()
+        self.limpiar_campos()
+
