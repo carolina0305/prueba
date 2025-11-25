@@ -346,3 +346,103 @@ def marcar_completada(self):
         self.actualizar_lista()
         self.limpiar_campos()
 
+# En database_manager.py
+
+import datetime # Importar al principio del archivo
+
+# ... (dentro del método añadir_tarea de la clase App) ...
+        if nomb: # Solo validamos la fecha si no está vacía
+            try:
+                datetime.datetime.strptime(nomb, '%Y-%m-%d')
+            except ValueError:
+                messagebox.showwarning("Formato Incorrecto", "La nomb debe tener el formato AAAA-MM-DD.")
+                return # Detiene la ejecución
+        # --- Fin de la Validación ---
+
+        # Si el código llega hasta aquí, los datos son válidos
+        self.db.añadir_tarea(hora, nomb, ubic)
+        # ...
+
+import sqlite3
+
+class DatabaseManager:
+    def __init__(self, db_path):
+        # El constructor ahora solo se encarga de la BD
+        self.conexion = sqlite3.connect(db_path)
+        self.cursor = self.conexion.cursor()
+        self.crear_tabla()
+
+    def crear_tabla(self):
+        # Este método es idéntico al que ya teníais
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Tienda ( ... )
+        """)
+        self.conexion.commit()
+
+    def añadir_tienda(self, ubic, hora, nomb):
+        # Ahora recibe los datos como parámetros
+        self.cursor.execute("INSERT INTO Tienda (horario, ubicacion, nombre) VALUES (?, ?, ?)",
+                          (ubic, hora, nomb))
+        self.conexion.commit()
+    
+    def actualizar_lista(self):
+        # Este método ahora DEVUELVE los datos, no actualiza la GUI
+        self.cursor.execute("SELECT id, horario, completada, ... FROM Tienda")
+        tiendas = self.cursor.fetchall()
+        return tiendas # Devuelve la lista de tuplas
+
+    # ... y así con el resto de métodos (modificar, eliminar, etc.)
+
+    # En main.py (o vuestro archivo principal)
+import tkinter as tk
+from tkinter import messagebox
+from database_manager import DatabaseManager # ¡Importamos nuestra nueva clase!
+
+class App:
+    def __init__(self, ventana):
+        self.ventana = ventana
+        self.ventana.title("Gestor de Tiendas")
+        
+        # 1. Creamos la instancia del gestor de la BD
+        self.db = DatabaseManager('tiendas.db')
+
+        # 2. La interfaz se crea igual
+        self.crear_interfaz() 
+        
+        # 3. La carga inicial de datos ahora usa el gestor
+        self.actualizar_lista_gui()
+
+    # ... (crear_interfaz, get_id_seleccionado, etc. se quedan aquí) ...
+
+    def añadir_tienda(self):
+        # 1. La App recoge los datos de la GUI
+        ubic = self.campo_ubic.get()
+        nomb = self.campo_nomb.get()
+        hora = self.campo_hora.get()
+
+        if desc:
+            # 2. La App le pasa los datos al gestor
+            self.db.añadir_tienda(ubic, nomb, hora) # Llama al método de la otra clase
+            
+            # 3. La App actualiza la GUI
+            self.limpiar_campos()
+            self.actualizar_lista_gui()
+        else:
+            messagebox.showwarning("Campo Vacío", "La descripción no puede estar vacía.")
+    
+    def actualizar_lista_gui(self):
+        # Este es el nuevo método que actualiza la GUI
+        self.lista_tiendas.delete(0, tk.END)
+        
+        # 1. Pide los datos al gestor de la BD
+        tiendas = self.db.actualizar_lista() # Llama al método que devuelve las tareas
+        
+        # 2. Recorre los datos y los añade a la Listbox
+        for tienda in tiendas:
+            # ... (el mismo bucle 'for' que ya teníais) ...
+            
+    # ... y así con el resto de métodos (modificar, eliminar...)
+    # La lógica de la GUI se queda en App, la lógica de BD se va a DatabaseManager
+
+
+
