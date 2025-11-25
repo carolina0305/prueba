@@ -1,0 +1,280 @@
+
+import tkinter as tk
+import sqlite3
+
+class App:
+    def __init__(self, ventana):
+
+        self.ventana = ventana
+        self.ventana.title("Gestor de Tareas")
+        # ... aquí irá todo el código de la interfaz ...
+
+        # 1. Ventana principal
+        ventana = tk.Tk()
+        ventana.title("Listado de tiendas")
+        ventana.geometry("700x400")  # Ancho x Alto
+
+
+        # 2. Creación de Widgets
+        # --- Formulario de Entrada ---
+        etiqueta_hora = tk.Label(ventana, text="Horario")
+        campo_hora = tk.Entry(ventana, width=40)
+
+        etiqueta_nomb = tk.Label(ventana, text="Nombre:")
+        campo_nomb = tk.Entry(ventana)
+
+        etiqueta_ubic = tk.Label(ventana, text="Ubicación")
+        campo_ubic = tk.Entry(ventana)
+
+        etiqueta_trab = tk.Label(ventana, text="Trabajadores:")
+        campo_trab = tk.Entry(ventana)
+
+
+        # Dentro de __init__ en la clase App
+
+# --- Creación de Frames para organizar ---
+        frame_formulario = tk.Frame(self.ventana, pady=10)
+        frame_botones = tk.Frame(self.ventana)
+        frame_lista = tk.Frame(self.ventana, pady=10)
+# --- Posicionamiento de los Frames principales con pack() ---
+        frame_formulario.pack() # Se apila arriba
+        frame_botones.pack()    # Se apila debajo del anterior
+# El frame de la lista se expandirá para rellenar el resto de la ventana
+        frame_lista.pack(fill=tk.BOTH, expand=True) 
+
+# AHORA, al crear los widgets, los asignamos a su frame correspondiente
+        self.etiqueta_desc = tk.Label(frame_formulario, text="Nombre:")
+
+# Y usamos .grid() para posicionarlos DENTRO de ese frame
+        self.etiqueta_desc.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+
+
+
+# Dentro de __init__ en la clase App
+
+# --- Conexión a la Base de Datos ---
+self.conexion = sqlite3.connect('tareas.db')
+self.cursor = self.conexion.cursor()
+self.crear_tabla()
+
+# ... (resto de la clase) ...
+
+def crear_tabla(self):
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Tarea (
+            id INTEGER PRIMARY KEY,
+            nombre TEXT NOT NULL,
+            horario TEXT,
+            ubicación TEXT,
+            completada INTEGER DEFAULT 0
+        )
+        """)
+        self.conexion.commit()
+
+        # Botón de Avril
+
+        def insertar():
+            print("Insertando tienda a la lista")
+
+        # Botón 
+
+        def modificar():
+            print("Modificar tienda favorita")
+
+        # Botón 
+
+        def eliminar():
+            print("Eliminar tienda favorita")        
+
+
+        # --- Botones ---
+        boton_add = tk.Button(ventana, text="Añadir tienda favorita", command=insertar)
+        boton_update = tk.Button(ventana, text="Modificar tienda favorita", command=modificar)
+        boton_delete = tk.Button(ventana, text="Eliminar tienda favorita", command=eliminar)
+
+        # --- Lista de Tareas ---
+        etiqueta_lista = tk.Label(ventana, text="Tiendas")
+        lista_productos = tk.Listbox(ventana, width=60, height=10)
+
+        # 3. Posicionamiento con Grid
+        # --- Formulario de Entrada ---
+        etiqueta_hora.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        campo_hora.grid(row=0, column=1, padx=10, pady=5, columnspan=2, sticky="ew")
+
+        etiqueta_nomb.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        campo_nomb.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+
+        etiqueta_ubic.grid(row=1, column=2, padx=10, pady=5, sticky="w")
+        campo_ubic.grid(row=1, column=3, padx=10, pady=5, sticky="ew")
+
+        etiqueta_trab.grid(row=0, column=2, padx=10, pady=5, sticky="w")
+        campo_trab.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+
+        # --- Botones ---
+        boton_add.grid(row=2, column=1, padx=10, pady=10)
+        boton_update.grid(row=2, column=2, padx=10, pady=10)
+        boton_delete.grid(row=2, column=3, padx=10, pady=10)
+
+        # --- Lista de Tareas ---
+        etiqueta_lista.grid(row=3, column=0, padx=10, pady=5, sticky="w")
+        lista_productos.grid(row=4, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
+
+
+
+
+# En __init__, conectamos el botón:
+self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.añadir_tienda)
+
+# ... (resto de la clase) ...
+
+def añadir_tarea(self):
+        # .get() es el método para obtener el texto de un widget Entry
+        nombre = self.campo_desc.get()
+        horario = self.campo_fecha.get()
+        ubicación = self.campo_prio.get()
+
+        # Usamos 'if' para validar que el nombre no esté vacío
+        if desc:
+            self.cursor.execute("INSERT INTO Tienda (nombre, horario, ubicación) VALUES (?, ?, ?)",
+                              (nombre, horario, ubicación))
+            self.conexion.commit()
+            self.actualizar_lista() # Actualizamos la lista para que se vea la nueva tarea
+        else:
+            print("Error: El nombre no puede estar vacío.") # Más adelante usaremos messagebox
+
+
+# ... (dentro de la clase App) ...
+
+def actualizar_lista(self):
+        # Primero, borramos todos los elementos que haya en la lista
+        self.lista_tiendas.delete(0, tk.END)
+        
+        # Obtenemos las tareas de la BD (id, nombre, completada)
+        self.cursor.execute("SELECT id, nombre, completada FROM Tienda ORDER BY horario")
+        tienda = self.cursor.horario() # Esto nos devuelve una lista de tuplas
+        
+        # Usamos un bucle 'for' para recorrer cada tarea de la lista 'tiendas'
+        for tienda in tiendas:
+            # Desempaquetamos la tupla en variables individuales
+            id_tienda, nombre_tienda, completada_tienda = tienda
+            
+            estado = "[x]" if completada_tienda else "[ ]"
+            texto_lista = f"{id_tienda}: {estado} {nombre_tienda}"
+            
+            # .insert() añade un elemento al final de la Listbox
+            self.lista_tiendas.insert(tk.END, texto_lista)
+
+# No olvides llamar a este método al final del __init__ para cargar las tareas al abrir la app
+# self.actualizar_lista()
+
+
+# ... (dentro de la clase App) ...
+
+def limpiar_campos(self):
+        self.campo_nombre.delete(0, tk.END)
+        self.campo_horario.delete(0, tk.END)
+        self.campo_ubicación.delete(0, tk.END)
+        self.lista_tiendas.selection_clear(0, tk.END)
+
+
+
+# En __init__, al crear la Listbox, añadimos esta línea:
+self.lista_tiendas.bind('<<ListboxSelect>>', self.cargar_tienda_seleccionada)
+
+# Este método auxiliar nos devuelve el ID de la tarea seleccionada
+def get_id_seleccionado(self):
+    try:
+        # curselection() devuelve la posición del elemento seleccionado
+        seleccionado = self.lista_tiendas.get(self.lista_tiendas.curselection())
+        # Partimos el texto (ej: "1: [ ] Tarea") por los ":" y cogemos la primera parte
+        id_tienda = int(seleccionado.split(":")[0])
+        return id_tienda  # Devolvemos el ID encontrado
+    except (tk.TclError, IndexError, ValueError):
+        # Si hay un error, devolvemos None
+        return None
+
+
+def cargar_tienda_seleccionada(self, event):
+    # Llamamos a nuestro método y guardamos el valor que nos devuelve en una variable
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda: # Si id_tarea no es None...
+        # Pedimos a la BD los datos de la tarea con ese ID
+        self.cursor.execute("SELECT nombre, horario, ubicación FROM Tienda WHERE id = ?", (id_tienda,))
+        tienda = self.cursor.fetchone() # fetchone() nos devuelve solo la primera fila encontrada
+        if tarea:
+            desc, fecha, prio = tarea
+            # Primero borramos el contenido actual de los campos
+            self.campo_nombre.delete(0, tk.END)
+            self.campo_horario.delete(0, tk.END)
+            self.campo_ubicación.delete(0, tk.END)
+            # Y luego insertamos el nuevo texto
+            self.campo_nombre.insert(0, nombre)
+            self.campo_horario.insert(0, horario)
+            self.campo_ubicación.insert(0, ubicación)
+
+# En __init__, conectamos el botón:
+self.boton_delete = tk.Button(frame_botones, text="Eliminar Tienda", command=self.eliminar_tienda)
+
+# ... (resto de la clase) ...
+
+def eliminar_tienda(self):
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda:
+        # Usamos messagebox.askyesno para mostrar una ventana de confirmación
+        if messagebox.askyesno("Confirmar Borrado", f"¿Estás seguro de que quieres eliminar la tienda {id_tienda}?"):
+            self.cursor.execute("DELETE FROM Tienda WHERE id = ?", (id_tienda,))
+            self.conexion.commit()
+            self.limpiar_campos()
+            self.actualizar_lista()
+    else:
+        messagebox.showinfo("Sin Selección", "Por favor, selecciona una tienda para eliminar.")
+
+
+
+
+def modificar_tienda(self):
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda:
+        nombre = self.campo_nombre.get()
+        if nombrec: # Validamos que la descripción no esté vacía
+            horario = self.campo_horario.get()
+            ubicación = self.campo_ubicación.get()
+            self.cursor.execute("UPDATE Tienda SET nombre = ?, horario = ?, ubicación = ? WHERE id = ?",
+                              (nombre, horario, ubicación, id_tienda))
+            self.conexion.commit()
+            self.limpiar_campos()
+            self.actualizar_lista()
+        else:
+            messagebox.showwarning("Campo Vacío", "El nombre no puede estar vacío.")
+    else:
+        messagebox.showinfo("Sin Selección", "Por favor, selecciona una tienda para modificar.")
+
+
+
+
+def marcar_completada(self):
+    id_tienda = self.get_id_seleccionado()
+    if id_tienda:
+        # 1. Obtenemos el estado actual de la tarea
+        self.cursor.execute("SELECT completada FROM Tienda WHERE id = ?", (id_tienda,))
+        estado_actual = self.cursor.fetchone()[0]
+        
+        # 2. Calculamos el nuevo estado (si era 0 se convierte en 1, y si era 1 se convierte en 0)
+        nuevo_estado = 1 if estado_actual == 0 else 0
+        
+        # 3. Actualizamos la base de datos con el nuevo estado
+        self.cursor.execute("UPDATE Tienda SET completada = ? WHERE id = ?", (nuevo_estado, id_tienda))
+        self.conexion.commit()
+        
+        # 4. Actualizamos la lista para que se vea el cambio
+        self.actualizar_lista()
+        self.limpiar_campos()
+
+
+
+# --- Código para lanzar la aplicación ---
+if __name__ == "__main__":
+    ventana_principal = tk.Tk()
+    app = App(ventana_principal)
+    ventana_principal.mainloop()
