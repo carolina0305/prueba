@@ -1,4 +1,3 @@
-
 import tkinter as tk
 import sqlite3
 
@@ -54,39 +53,11 @@ class App:
 # Dentro de __init__ en la clase App
 
 # --- Conexión a la Base de Datos ---
-self.conexion = sqlite3.connect('tareas.db')
-self.cursor = self.conexion.cursor()
-self.crear_tabla()
+        self.conexion = sqlite3.connect('tiendas.db')
+        self.cursor = self.conexion.cursor()
+        self.crear_tabla()
 
 # ... (resto de la clase) ...
-
-def crear_tabla(self):
-        self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS Tarea (
-            id INTEGER PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            horario TEXT,
-            ubicación TEXT,
-            completada INTEGER DEFAULT 0
-        )
-        """)
-        self.conexion.commit()
-
-        # Botón de Avril
-
-        def insertar():
-            print("Insertando tienda a la lista")
-
-        # Botón 
-
-        def modificar():
-            print("Modificar tienda favorita")
-
-        # Botón 
-
-        def eliminar():
-            print("Eliminar tienda favorita")        
-
 
         # --- Botones ---
         boton_add = tk.Button(ventana, text="Añadir tienda favorita", command=insertar)
@@ -124,7 +95,34 @@ def crear_tabla(self):
 
 
 # En __init__, conectamos el botón:
-self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.añadir_tienda)
+    self.boton_add = tk.Button(frame_botones, text="Añadir Tienda", command=self.añadir_tienda)
+
+def crear_tabla(self):
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS TIENDAS (
+            id INTEGER PRIMARY KEY,
+            nombre TEXT NOT NULL,
+            horario TEXT,
+            ubicación TEXT,
+            completada INTEGER DEFAULT 0
+        )
+        """)
+        self.conexion.commit()
+
+        # Botón de Avril
+
+        def insertar():
+            print("Insertando tienda a la lista")
+
+        # Botón 
+
+        def modificar():
+            print("Modificar tienda favorita")
+
+        # Botón 
+
+        def eliminar():
+            print("Eliminar tienda favorita")        
 
 # ... (resto de la clase) ...
 
@@ -180,7 +178,7 @@ def limpiar_campos(self):
 
 
 # En __init__, al crear la Listbox, añadimos esta línea:
-self.lista_tiendas.bind('<<ListboxSelect>>', self.cargar_tienda_seleccionada)
+        self.lista_tiendas.bind('<<ListboxSelect>>', self.cargar_tienda_seleccionada)
 
 # Este método auxiliar nos devuelve el ID de la tarea seleccionada
 def get_id_seleccionado(self):
@@ -214,7 +212,7 @@ def cargar_tienda_seleccionada(self, event):
             self.campo_ubicación.insert(0, ubicación)
 
 # En __init__, conectamos el botón:
-self.boton_delete = tk.Button(frame_botones, text="Eliminar Tienda", command=self.eliminar_tienda)
+        self.boton_delete = tk.Button(frame_botones, text="Eliminar Tienda", command=self.eliminar_tienda)
 
 # ... (resto de la clase) ...
 
