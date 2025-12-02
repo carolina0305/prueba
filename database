@@ -1,0 +1,284 @@
+# En database_manager.py
+
+import datetime # Importar al principio del archivo
+
+        # ... (dentro del método añadir_tarea de la clase App) ...
+if nomb: # Solo validamos la fecha si no está vacía
+            try:
+                datetime.datetime.strptime(nomb, '%Y-%m-%d')
+            except ValueError:
+                messagebox.showwarning("Formato Incorrecto", "La nomb debe tener el formato AAAA-MM-DD.")
+                return # Detiene la ejecución
+        # --- Fin de la Validación ---
+
+        # Si el código llega hasta aquí, los datos son válidos 
+self.db.añadir_tarea(hora, nomb, ubic)
+        # ...
+from tkinter import ttk # Importar al principio del archivo
+
+
+# ... (Dentro de crear_interfaz, al crear los widgets del formulario) ...
+
+tk.Label(frame_formulario, text="Horario:").grid(row=1, column=2, padx=5, pady=5, sticky="w")
+        
+        # Creamos el Combobox
+self.combo_hora = ttk.Combobox(
+            frame_formulario,
+            values=["Baja", "Media", "Alta"],
+            state="readonly" # Para que no se pueda escribir, solo seleccionar
+        )
+self.combo_hora.grid(row=1, column=3, padx=5, pady=5, sticky="ew")
+self.combo_hora.current(1) # Selecciona "Media" por defecto
+
+        # ¡Importante! Ahora, en 'añadir_tienda', en lugar de .get() de un Entry,
+        # usaremos self.combo_hora.get() para obtener el valor seleccionado.
+
+
+import sqlite3
+
+class DatabaseManager:
+    def __init__(self, db_path):
+        # El constructor ahora solo se encarga de la BD
+        self.conexion = sqlite3.connect(db_path)
+        self.cursor = self.conexion.cursor()
+        self.crear_tabla()
+
+    def crear_tabla(self):
+        # Este método es idéntico al que ya teníais
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Tienda ( ... )
+        """)
+        self.conexion.commit()
+
+    def añadir_tienda(self, ubic, hora, nomb):
+        # Ahora recibe los datos como parámetros
+        self.cursor.execute("INSERT INTO Tienda (horario, ubicacion, nombre) VALUES (?, ?, ?)",
+                          (ubic, hora, nomb))
+        self.conexion.commit()
+    
+    def actualizar_lista(self):
+        # Este método ahora DEVUELVE los datos, no actualiza la GUI
+        self.cursor.execute("SELECT id, horario, completada, ... FROM Tienda")
+        tiendas = self.cursor.fetchall()
+        return tiendas # Devuelve la lista de tuplas
+
+    # ... y así con el resto de métodos (modificar, eliminar, etc.)
+
+    # En main.py (o vuestro archivo principal)
+
+
+
+# ... (Dentro de la clase DatabaseManager) ...
+
+    # Modificamos el método para que acepte un parámetro opcional
+    def actualizar_lista(self, termino_busqueda=None):
+        if termino_busqueda:
+            # Si nos dan un término de búsqueda, filtramos con LIKE
+            # Ponemos '%' alrededor del término para buscar en cualquier parte
+            termino = f"%{termino_busqueda}%"
+            self.cursor.execute("SELECT ... FROM Tarea WHERE nombre LIKE ?", (termino,))
+        else:
+            # Si no hay término, seleccionamos todo (como antes)
+            self.cursor.execute("SELECT ... FROM Tienda ORDER BY horario")
+            
+        tiendas = self.cursor.fetchall()
+        return tiendas
+
+
+import tkinter as tk
+from tkinter import messagebox
+from database_manager import DatabaseManager # ¡Importamos nuestra nueva clase!
+
+class App:
+    def __init__(self, ventana):
+        self.ventana = ventana
+        self.ventana.title("Gestor de Tiendas")
+        
+        # 1. Creamos la instancia del gestor de la BD
+        self.db = DatabaseManager('tiendas.db')
+
+        # 2. La interfaz se crea igual
+        self.crear_interfaz() 
+        
+        # 3. La carga inicial de datos ahora usa el gestor
+        self.actualizar_lista_gui()
+
+# ... (Dentro del __init__ o crear_interfaz de la clase App) ...
+        self.barra_menu = tk.Menu(self.ventana)
+        self.ventana.config(menu=self.barra_menu)
+
+        # Creamos el menú desplegable "Archivo"
+        menu_archivo = tk.Menu(self.barra_menu, tearoff=0)
+        self.barra_menu.add_cascade(label="Archivo", menu=menu_archivo)
+        menu_archivo.add_separator()
+        menu_archivo.add_command(label="Salir", command=self.ventana.destroy)
+
+        # Creamos el menú desplegable "Ayuda"
+        menu_ayuda = tk.Menu(self.barra_menu, tearoff=0)
+        self.barra_menu.add_cascade(label="Ayuda", menu=menu_ayuda)
+        menu_ayuda.add_command(label="Acerca de...", command=self.mostrar_acerca_de)
+    # ... (crear_interfaz, get_id_seleccionado, etc. se quedan aquí) ...
+
+    # Añadimos opciones a "Archivo"
+        menu_archivo.add_command(label="Exportar a JSON", command=self.exportar_json)
+        menu_archivo.add_command(label="Importar desde JSON", command=self.importar_json)
+        menu_archivo.add_separator() # Una línea separadora
+        menu_archivo.add_command(label="Salir", command=self.ventana.destroy)
+
+
+# ... (Dentro de la clase App) ...
+
+    # Este método se llama desde el botón "Buscar"
+    def buscar_tiendas(self):
+        termino = self.campo_busqueda.get()
+        self.actualizar_lista_gui(termino) # Llamamos al actualizador con el término
+
+    # Este método se llama desde el botón "Limpiar"
+    def limpiar_busqueda(self):
+        self.campo_busqueda.delete(0, tk.END)
+        self.actualizar_lista_gui() # Llamamos al actualizador sin término
+
+    # Modificamos el actualizador de la GUI para que pase el término
+    def actualizar_lista_gui(self, termino_busqueda=None):
+        self.lista_tiendas.delete(0, tk.END)
+        
+        # Pedimos los datos (filtrados o no) al gestor de la BD
+        tiendas = self.db.actualizar_lista(termino_busqueda)
+        
+        for tienda in tiendas:
+            # ... (el mismo bucle 'for' que ya teníais) ...
+
+
+# ... (Dentro de crear_interfaz) ...
+
+        # ... (Justo después de frame_botones.pack() y antes de frame_lista.pack()) ...
+        
+        # --- Frame de Búsqueda ---
+        frame_busqueda = tk.Frame(self.ventana)
+        frame_busqueda.pack(fill=tk.X, padx=10, pady=5)
+
+        tk.Label(frame_busqueda, text="Buscar:").pack(side=tk.LEFT, padx=5)
+        self.campo_busqueda = tk.Entry(frame_busqueda)
+        self.campo_busqueda.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+
+        self.boton_buscar = tk.Button(frame_busqueda, text="Buscar", command=self.buscar_tareas)
+        self.boton_buscar.pack(side=tk.LEFT, padx=5)
+
+        self.boton_limpiar_busqueda = tk.Button(frame_busqueda, text="Limpiar", command=self.limpiar_busqueda)
+        self.boton_limpiar_busqueda.pack(side=tk.LEFT, padx=5)
+
+        # ... (frame_lista.pack() iría después) ...
+
+
+        
+import json # Importar al principio del archivo
+
+# ... (dentro de la clase App) ...
+
+    # Esta es la función que hemos conectado al menú
+    def exportar_json(self):
+        # 1. Pedimos todos los datos al gestor de la BD
+        # (Necesitarás modificar el método en DatabaseManager para que devuelva TODOS los campos)
+        tiendas = self.db.obtener_todas_las_tiendas() # Asumimos que este método existe
+        
+        lista_de_diccionarios = []
+        for tienda in tiendas:
+            # Convertimos cada tupla (ej: (1, 'Comprar', ...)) en un diccionario
+            diccionario_tienda = {
+                'id': tienda[0],
+                'nombre': tiendaa[1],
+                'hora': tiendaa[2],
+                'ubicacion': tiendaa[3],
+                'completada': tienda[4]
+            }
+            lista_de_diccionarios.append(diccionario_tienda)
+            
+        # 2. Escribimos la lista de diccionarios en un archivo .json
+        try:
+            with open('backup_tareas.json', 'w', encoding='utf-8') as f:
+                json.dump(lista_de_diccionarios, f, indent=4, ensure_ascii=False)
+            messagebox.showinfo("Exportación Exitosa", "Datos exportados a backup_tareas.json")
+        except Exception as e: # Capturamos cualquier error que pueda ocurrir
+            messagebox.showerror("Error de Exportación", f"No se pudo exportar: {e}")
+
+# ... (dentro de la clase App) ...
+
+    # Esta es la función que hemos conectado al menú
+    def importar_json(self):
+        try:
+            with open('backup_tiendas.json', 'r', encoding='utf-8') as f:
+                # json.load lee el archivo 'f' y lo convierte a una lista de Python
+                lista_de_tareas = json.load(f)
+                
+            for tienda in lista_de_taiendas:
+                # Insertamos cada tarea en la BD usando las claves del diccionario
+                self.db.añadir_tarea(
+                    tienda['nombre'],
+                    tienda['hora'],
+                    tiendaa['ubicacion']
+                )
+                # (Nota: esto no importa el estado 'completada' o el 'id', se podría mejorar)
+                
+            self.actualizar_lista_gui()
+            messagebox.showinfo("Importación Exitosa", "Datos importados desde backup_tiendas.json")
+            
+        except FileNotFoundError:
+            messagebox.showerror("Error", "No se encontró el archivo 'backup_tiendas.json'")
+        except Exception as e:
+            messagebox.showerror("Error de Importación", f"No se pudo importar: {e}")
+
+
+# ... (dentro de la clase App) ...
+    def mostrar_acerca_de(self):
+        # Toplevel crea una nueva ventana "hija" de la ventana principal
+        ventana_acerca_de = tk.Toplevel(self.ventana)
+        ventana_acerca_de.title("Acerca del Gestor")
+        ventana_acerca_de.geometry("300x200")
+
+        # Hacemos que la ventana sea "modal": bloquea la ventana principal
+        ventana_acerca_de.grab_set()
+        ventana_acerca_de.transient(self.ventana)
+
+        tk.Label(ventana_acerca_de, text="Gestor de Tiendas v1.0").pack(pady=20)
+        tk.Label(ventana_acerca_de, text="Desarrollado por: [Nombres del Equipo]").pack(pady=5)
+        
+        boton_cerrar = tk.Button(ventana_acerca_de, text="Cerrar", command=ventana_acerca_de.destroy)
+        boton_cerrar.pack(pady=20)
+
+
+    def añadir_tienda(self):
+        # 1. La App recoge los datos de la GUI
+        ubic = self.campo_ubic.get()
+        nomb = self.campo_nomb.get()
+        hora = self.campo_hora.get()
+
+        if desc:
+            # 2. La App le pasa los datos al gestor
+            self.db.añadir_tienda(ubic, nomb, hora) # Llama al método de la otra clase
+            
+            # 3. La App actualiza la GUI
+            self.limpiar_campos()
+            self.actualizar_lista_gui()
+        else:
+            messagebox.showwarning("Campo Vacío", "La descripción no puede estar vacía.")
+    
+    def actualizar_lista_gui(self):
+        # Este es el nuevo método que actualiza la GUI
+        self.lista_tiendas.delete(0, tk.END)
+        
+        # 1. Pide los datos al gestor de la BD
+        tiendas = self.db.actualizar_lista() # Llama al método que devuelve las tareas
+        
+        # 2. Recorre los datos y los añade a la Listbox
+        for tienda in tiendas:
+            # ... (el mismo bucle 'for' que ya teníais) ...
+            
+         # ... y así con el resto de métodos (modificar, eliminar...)
+        # La lógica de la GUI se queda en App, la lógica de BD se va a DatabaseManager
+
+
+
+
+
+
+
