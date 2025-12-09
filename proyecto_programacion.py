@@ -3,186 +3,182 @@ from tkinter import messagebox
 import sqlite3
 
 class App:
+
     def __init__(self, ventana):
         self.ventana = ventana
         self.ventana.title("Gestor de Tiendas")
         self.ventana.geometry("700x400")
 
-        # --- Frames principales ---
-        self.frame_formulario = tk.Frame(self.ventana, pady=10)
-        self.frame_botones = tk.Frame(self.ventana, pady=10)
-        self.frame_lista = tk.Frame(self.ventana, pady=10)
+        # ====== Color de fondo general ======
+        COLOR_FONDO = "#D7ECFF"   # azul clarito
 
-        self.frame_formulario.pack()
-        self.frame_botones.pack()
-        self.frame_lista.pack(fill=tk.BOTH, expand=True)
+        self.ventana.configure(bg=COLOR_FONDO)
 
-        # --- Widgets del formulario ---
-        tk.Label(self.frame_formulario, text="Nombre:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        self.campo_nombre = tk.Entry(self.frame_formulario, width=40)
-        self.campo_nombre.grid(row=0, column=1, padx=5, pady=5)
-
-        tk.Label(self.frame_formulario, text="Horario:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        self.campo_horario = tk.Entry(self.frame_formulario, width=40)
-        self.campo_horario.grid(row=1, column=1, padx=5, pady=5)
-
-        tk.Label(self.frame_formulario, text="Ubicación:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
-        self.campo_ubicacion = tk.Entry(self.frame_formulario, width=40)
-        self.campo_ubicacion.grid(row=2, column=1, padx=5, pady=5)
-
-        # --- Botones ---
-        self.boton_add = tk.Button(self.frame_botones, text="Añadir Tienda", command=self.añadir_tienda)
-        self.boton_add.grid(row=0, column=0, padx=10)
-
-        self.boton_update = tk.Button(self.frame_botones, text="Modificar Tienda", command=self.modificar_tienda)
-        self.boton_update.grid(row=0, column=1, padx=10)
-
-        self.boton_delete = tk.Button(self.frame_botones, text="Eliminar Tienda", command=self.eliminar_tienda)
-        self.boton_delete.grid(row=0, column=2, padx=10)
-
-    
-
-        # --- Lista de tiendas ---
-        tk.Label(self.frame_lista, text="Tiendas Registradas:").pack(anchor="w")
-        self.lista_tiendas = tk.Listbox(self.frame_lista, width=60, height=10)
-        self.lista_tiendas.pack(fill=tk.BOTH, expand=True)
-        self.lista_tiendas.bind("<<ListboxSelect>>", self.cargar_tienda_seleccionada)
-
-        # --- Base de datos ---
+        # ====== Base de datos ======
         self.conexion = sqlite3.connect("tiendas.db")
         self.cursor = self.conexion.cursor()
         self.crear_tabla()
 
-        # Cargar al iniciar
+        # ====== Frames ======
+        frame_form = tk.Frame(ventana, pady=10, bg=COLOR_FONDO)
+        frame_form.pack()
+
+        frame_bot = tk.Frame(ventana, pady=10, bg=COLOR_FONDO)
+        frame_bot.pack()
+
+        frame_lista = tk.Frame(ventana, bg=COLOR_FONDO)
+        frame_lista.pack(fill=tk.BOTH, expand=True)
+
+        # ====== Campos ======
+        tk.Label(frame_form, text="Nombre:", bg=COLOR_FONDO).pack(anchor="w")
+        self.campo_nombre = tk.Entry(frame_form, width=40)
+        self.campo_nombre.pack()
+
+        tk.Label(frame_form, text="Horario:", bg=COLOR_FONDO).pack(anchor="w")
+        self.campo_horario = tk.Entry(frame_form, width=40)
+        self.campo_horario.pack()
+
+        tk.Label(frame_form, text="Ubicación:", bg=COLOR_FONDO).pack(anchor="w")
+        self.campo_ubicacion = tk.Entry(frame_form, width=40)
+        self.campo_ubicacion.pack()
+
+        tk.Label(frame_form, text="Trabajadores:", bg=COLOR_FONDO).pack(anchor="w")
+        self.campo_trab = tk.Entry(frame_form, width=40)
+        self.campo_trab.pack()
+
+        # ====== Botones ======
+        tk.Button(frame_bot, text="Añadir", command=self.añadir).grid(row=0, column=0, padx=10)
+        tk.Button(frame_bot, text="Modificar", command=self.modificar).grid(row=0, column=1, padx=10)
+        tk.Button(frame_bot, text="Eliminar", command=self.eliminar).grid(row=0, column=2, padx=10)
+
+        # ====== Lista ======
+        tk.Label(frame_lista, text="Tiendas registradas:", bg=COLOR_FONDO).pack(anchor="w")
+        
+        self.lista = tk.Listbox(frame_lista, width=70, height=10)
+        self.lista.pack(fill=tk.BOTH, expand=True)
+        self.lista.bind("<<ListboxSelect>>", self.cargar_seleccion)
+
+        # Cargar lista al iniciar
         self.actualizar_lista()
 
-    # ================================================================
+    # ====================================================
     # BASE DE DATOS
-    # ================================================================
+    # ====================================================
     def crear_tabla(self):
         self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS Tienda (
-            id INTEGER PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            horario TEXT,
-            ubicacion TEXT,
-            completada INTEGER DEFAULT 0
-        )
+            CREATE TABLE IF NOT EXISTS Tienda (
+                id INTEGER PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                horario TEXT,
+                ubicacion TEXT,
+                trabajadores TEXT
+            )
         """)
         self.conexion.commit()
 
-    # ================================================================
-    # MÉTODOS CRUD
-    # ================================================================
-    def añadir_tienda(self):
+    # ====================================================
+    # FUNCIONES CRUD
+    # ====================================================
+    def añadir(self):
         nombre = self.campo_nombre.get().strip()
         horario = self.campo_horario.get().strip()
         ubicacion = self.campo_ubicacion.get().strip()
+        trab = self.campo_trab.get().strip()
 
         if not nombre:
             messagebox.showwarning("Error", "El nombre no puede estar vacío.")
             return
 
         self.cursor.execute(
-            "INSERT INTO Tienda (nombre, horario, ubicacion) VALUES (?, ?, ?)",
-            (nombre, horario, ubicacion)
+            "INSERT INTO Tienda (nombre, horario, ubicacion, trabajadores) VALUES (?, ?, ?, ?)",
+            (nombre, horario, ubicacion, trab)
         )
         self.conexion.commit()
 
-        self.limpiar_campos()
+        self.limpiar()
         self.actualizar_lista()
 
+    def modificar(self):
+        id_tienda = self.id_seleccionado()
+        if not id_tienda:
+            messagebox.showinfo("Atención", "Selecciona una tienda.")
+            return
+
+        nombre = self.campo_nombre.get()
+        horario = self.campo_horario.get()
+        ubicacion = self.campo_ubicacion.get()
+        trab = self.campo_trab.get()
+
+        self.cursor.execute(
+            "UPDATE Tienda SET nombre=?, horario=?, ubicacion=?, trabajadores=? WHERE id=?",
+            (nombre, horario, ubicacion, trab, id_tienda)
+        )
+        self.conexion.commit()
+
+        self.limpiar()
+        self.actualizar_lista()
+
+    def eliminar(self):
+        id_tienda = self.id_seleccionado()
+        if not id_tienda:
+            messagebox.showinfo("Atención", "Selecciona una tienda.")
+            return
+
+        if messagebox.askyesno("Confirmar", "¿Eliminar esta tienda?"):
+            self.cursor.execute("DELETE FROM Tienda WHERE id=?", (id_tienda,))
+            self.conexion.commit()
+
+            self.limpiar()
+            self.actualizar_lista()
+
+    # ====================================================
+    # LISTA / SELECCIÓN
+    # ====================================================
     def actualizar_lista(self):
-        self.lista_tiendas.delete(0, tk.END)
+        self.lista.delete(0, tk.END)
 
-        self.cursor.execute("SELECT id, nombre, horario, ubicacion, completada FROM Tienda ORDER BY id")
-        tiendas = self.cursor.fetchall()
+        self.cursor.execute("SELECT * FROM Tienda")
+        for id_, nom, hor, ubi, trab in self.cursor.fetchall():
+            texto = f"{id_}: {nom} — {hor} — {ubi} — Trabajadores: {trab}"
+            self.lista.insert(tk.END, texto)
 
-        for t in tiendas:
-            id_, nombre, horario, ubicacion, completada = t
-            estado = "[X]" if completada else "[ ]"
-            texto = f"{id_}: {estado} {nombre} — {horario} — {ubicacion}"
-            self.lista_tiendas.insert(tk.END, texto)
-
-    def limpiar_campos(self):
-        self.campo_nombre.delete(0, tk.END)
-        self.campo_horario.delete(0, tk.END)
-        self.campo_ubicacion.delete(0, tk.END)
-        self.lista_tiendas.selection_clear(0, tk.END)
-
-    # ================================================================
-    # SELECCIÓN DE LISTA
-    # ================================================================
-    def get_id_seleccionado(self):
+    def id_seleccionado(self):
         try:
-            seleccionado = self.lista_tiendas.get(self.lista_tiendas.curselection())
-            id_tienda = int(seleccionado.split(":")[0])
-            return id_tienda
+            texto = self.lista.get(self.lista.curselection())
+            return int(texto.split(":")[0])
         except:
             return None
 
-    def cargar_tienda_seleccionada(self, event):
-        id_tienda = self.get_id_seleccionado()
+    def cargar_seleccion(self, event):
+        id_tienda = self.id_seleccionado()
         if not id_tienda:
             return
 
-        self.cursor.execute(
-            "SELECT nombre, horario, ubicacion FROM Tienda WHERE id = ?",
-            (id_tienda,)
-        )
+        self.cursor.execute("SELECT nombre, horario, ubicacion, trabajadores FROM Tienda WHERE id=?", (id_tienda,))
         tienda = self.cursor.fetchone()
 
         if tienda:
-            nombre, horario, ubicacion = tienda
+            nombre, horario, ubicacion, trab = tienda
             self.campo_nombre.delete(0, tk.END)
             self.campo_horario.delete(0, tk.END)
             self.campo_ubicacion.delete(0, tk.END)
+            self.campo_trab.delete(0, tk.END)
 
             self.campo_nombre.insert(0, nombre)
             self.campo_horario.insert(0, horario)
             self.campo_ubicacion.insert(0, ubicacion)
+            self.campo_trab.insert(0, trab)
 
-    # ================================================================
-    # MODIFICAR / ELIMINAR / COMPLETAR
-    # ================================================================
-    def eliminar_tienda(self):
-        id_tienda = self.get_id_seleccionado()
-        if not id_tienda:
-            messagebox.showinfo("Sin selección", "Selecciona una tienda primero.")
-            return
-
-        if messagebox.askyesno("Confirmar", "¿Eliminar esta tienda?"):
-            self.cursor.execute("DELETE FROM Tienda WHERE id = ?", (id_tienda,))
-            self.conexion.commit()
-            self.actualizar_lista()
-            self.limpiar_campos()
-
-    def modificar_tienda(self):
-        id_tienda = self.get_id_seleccionado()
-        if not id_tienda:
-            messagebox.showinfo("Sin selección", "Selecciona una tienda primero.")
-            return
-
-        nombre = self.campo_nombre.get().strip()
-        horario = self.campo_horario.get().strip()
-        ubicacion = self.campo_ubicacion.get().strip()
-
-        if not nombre:
-            messagebox.showwarning("Error", "El nombre no puede estar vacío.")
-            return
-
-        self.cursor.execute(
-            "UPDATE Tienda SET nombre=?, horario=?, ubicacion=? WHERE id=?",
-            (nombre, horario, ubicacion, id_tienda)
-        )
-        self.conexion.commit()
-
-        self.actualizar_lista()
-        self.limpiar_campos()
+    def limpiar(self):
+        self.campo_nombre.delete(0, tk.END)
+        self.campo_horario.delete(0, tk.END)
+        self.campo_ubicacion.delete(0, tk.END)
+        self.campo_trab.delete(0, tk.END)
+        self.lista.selection_clear(0, tk.END)
 
 
-# --- Lanzar App ---
+# Lanzar app
 if __name__ == "__main__":
-    ventana_principal = tk.Tk()
-    app = App(ventana_principal)
-    ventana_principal.mainloop()
+    root = tk.Tk()
+    App(root)
+    root.mainloop()
