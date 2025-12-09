@@ -1,4 +1,3 @@
-# DatabaseManager (versión adaptada al estilo del manejador de tareas)
 
 class DatabaseManager:
     def __init__(self, db_path='tiendas.db'):
