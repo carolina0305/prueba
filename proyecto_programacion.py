@@ -11,6 +11,10 @@ class App:
 
         #  Color de fondo general 
         COLOR_FONDO = "#D7ECFF"   # azul clarito
+        COLOR_BOTONES = "#F527CF"  #rosa
+        COLOR_CAMPOS = "#82D4FF"   #azul más oscuro
+        COLOR_CASILLAS = "#F5CF27"  #amarillo
+
 
         self.ventana.configure(bg=COLOR_FONDO)
 
@@ -30,27 +34,26 @@ class App:
         frame_lista.pack(fill=tk.BOTH, expand=True)
 
         # Campos 
-        tk.Label(frame_form, text="Nombre:", bg=COLOR_FONDO).pack(anchor="w")
-        self.campo_nombre = tk.Entry(frame_form, width=40)
+        tk.Label(frame_form, text="Nombre:", bg=COLOR_CAMPOS).pack(anchor="w")
+        self.campo_nombre = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
         self.campo_nombre.pack()
 
-        tk.Label(frame_form, text="Horario:", bg=COLOR_FONDO).pack(anchor="w")
-        self.campo_horario = tk.Entry(frame_form, width=40)
+        tk.Label(frame_form, text="Horario:", bg=COLOR_CAMPOS).pack(anchor="w")
+        self.campo_horario = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
         self.campo_horario.pack()
 
-        tk.Label(frame_form, text="Ubicación:", bg=COLOR_FONDO).pack(anchor="w")
-        self.campo_ubicacion = tk.Entry(frame_form, width=40)
+        tk.Label(frame_form, text="Ubicación:", bg=COLOR_CAMPOS).pack(anchor="w")
+        self.campo_ubicacion = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
         self.campo_ubicacion.pack()
 
-        tk.Label(frame_form, text="Trabajadores:", bg=COLOR_FONDO).pack(anchor="w")
-        self.campo_trab = tk.Entry(frame_form, width=40)
+        tk.Label(frame_form, text="Trabajadores:", bg=COLOR_CAMPOS).pack(anchor="w")
+        self.campo_trab = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
         self.campo_trab.pack()
 
         # Botones 
-        tk.Button(frame_bot, text="Añadir", command=self.añadir).grid(row=0, column=0, padx=10)
-        tk.Button(frame_bot, text="Modificar", command=self.modificar).grid(row=0, column=1, padx=10)
-        tk.Button(frame_bot, text="Eliminar", command=self.eliminar).grid(row=0, column=2, padx=10)
-
+        tk.Button(frame_bot, text="Añadir", command=self.añadir, bg=COLOR_BOTONES).grid(row=0, column=0, padx=10)
+        tk.Button(frame_bot, text="Modificar", command=self.modificar, bg=COLOR_BOTONES).grid(row=0, column=1, padx=10)
+        tk.Button(frame_bot, text="Eliminar", command=self.eliminar, bg=COLOR_BOTONES).grid(row=0, column=2, padx=10)
         # Lista
         tk.Label(frame_lista, text="Tiendas registradas:", bg=COLOR_FONDO).pack(anchor="w")
         
