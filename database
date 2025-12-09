@@ -7,9 +7,9 @@ import sqlite3
 import json
 import os
 
-# =========================
+
 # DatabaseManager
-# =========================
+
 class DatabaseManager:
     def __init__(self, db_path='tiendas.db'):
         # Conexión (allowing same-thread use by default; ok para apps sencillas)
@@ -81,9 +81,9 @@ class DatabaseManager:
             pass
 
 
-# =========================
+
 # App (Tkinter GUI)
-# =========================
+
 class App:
     def __init__(self, ventana):
         self.ventana = ventana
@@ -156,7 +156,7 @@ class App:
         tk.Button(frame_bus, text="Buscar", command=self.buscar_tiendas).pack(side=tk.LEFT, padx=5)
         tk.Button(frame_bus, text="Limpiar", command=self.limpiar_busqueda).pack(side=tk.LEFT, padx=5)
 
-        # ---- lista (Treeview) ----
+        #  lista (Treeview) 
         frame_lista = tk.Frame(self.ventana, padx=10, pady=6)
         frame_lista.pack(fill=tk.BOTH, expand=True)
 
@@ -177,9 +177,9 @@ class App:
         vsb.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.pack(fill=tk.BOTH, expand=True)
 
-    # -------------------------
+  
     # Operaciones CRUD
-    # -------------------------
+ 
     def añadir_tienda(self):
         nombre = self.campo_nomb.get().strip()
         ubic = self.campo_ubic.get().strip()
@@ -308,9 +308,9 @@ class App:
 
         tk.Button(editar, text="Guardar cambios", command=guardar).pack(pady=10)
 
-    # -------------------------
+  
     # BUSCAR / LIMPIAR
-    # -------------------------
+  
     def buscar_tiendas(self):
         termino = self.campo_busqueda.get().strip()
         self.actualizar_lista_gui(termino if termino else None)
@@ -319,9 +319,9 @@ class App:
         self.campo_busqueda.delete(0, tk.END)
         self.actualizar_lista_gui()
 
-    # -------------------------
+    
     # EXPORT / IMPORT JSON
-    # -------------------------
+
     def exportar_json(self):
         try:
             datos = self.db.obtener_todas_las_tiendas()
@@ -359,9 +359,9 @@ class App:
         except Exception as e:
             messagebox.showerror("Error de importación", f"No se pudo importar: {e}")
 
-    # -------------------------
+   
     # ACERCA DE & CIERRE
-    # -------------------------
+ 
     def mostrar_acerca_de(self):
         v = tk.Toplevel(self.ventana)
         v.title("Acerca del Gestor")
@@ -384,9 +384,8 @@ class App:
             pass
 
 
-# =========================
 # MAIN
-# =========================
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
