@@ -9,17 +9,17 @@ class App:
         self.ventana.title("Gestor de Tiendas")
         self.ventana.geometry("700x400")
 
-        # ====== Color de fondo general ======
+        #  Color de fondo general 
         COLOR_FONDO = "#D7ECFF"   # azul clarito
 
         self.ventana.configure(bg=COLOR_FONDO)
 
-        # ====== Base de datos ======
+        # Base de datos 
         self.conexion = sqlite3.connect("tiendas.db")
         self.cursor = self.conexion.cursor()
         self.crear_tabla()
 
-        # ====== Frames ======
+        # Frames
         frame_form = tk.Frame(ventana, pady=10, bg=COLOR_FONDO)
         frame_form.pack()
 
@@ -29,7 +29,7 @@ class App:
         frame_lista = tk.Frame(ventana, bg=COLOR_FONDO)
         frame_lista.pack(fill=tk.BOTH, expand=True)
 
-        # ====== Campos ======
+        # Campos 
         tk.Label(frame_form, text="Nombre:", bg=COLOR_FONDO).pack(anchor="w")
         self.campo_nombre = tk.Entry(frame_form, width=40)
         self.campo_nombre.pack()
@@ -46,12 +46,12 @@ class App:
         self.campo_trab = tk.Entry(frame_form, width=40)
         self.campo_trab.pack()
 
-        # ====== Botones ======
+        # Botones 
         tk.Button(frame_bot, text="Añadir", command=self.añadir).grid(row=0, column=0, padx=10)
         tk.Button(frame_bot, text="Modificar", command=self.modificar).grid(row=0, column=1, padx=10)
         tk.Button(frame_bot, text="Eliminar", command=self.eliminar).grid(row=0, column=2, padx=10)
 
-        # ====== Lista ======
+        # Lista
         tk.Label(frame_lista, text="Tiendas registradas:", bg=COLOR_FONDO).pack(anchor="w")
         
         self.lista = tk.Listbox(frame_lista, width=70, height=10)
@@ -61,9 +61,9 @@ class App:
         # Cargar lista al iniciar
         self.actualizar_lista()
 
-    # ====================================================
+    
     # BASE DE DATOS
-    # ====================================================
+
     def crear_tabla(self):
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS Tienda (
@@ -76,9 +76,9 @@ class App:
         """)
         self.conexion.commit()
 
-    # ====================================================
+    
     # FUNCIONES CRUD
-    # ====================================================
+   
     def añadir(self):
         nombre = self.campo_nombre.get().strip()
         horario = self.campo_horario.get().strip()
@@ -131,9 +131,9 @@ class App:
             self.limpiar()
             self.actualizar_lista()
 
-    # ====================================================
+    
     # LISTA / SELECCIÓN
-    # ====================================================
+    
     def actualizar_lista(self):
         self.lista.delete(0, tk.END)
 
