@@ -11,9 +11,9 @@ class App:
 
         #  Color de fondo general 
         COLOR_FONDO = "#D7ECFF"   # azul clarito
-        COLOR_BOTONES = "#F527CF"  #rosa
-        COLOR_CAMPOS = "#82D4FF"   #azul más oscuro
-        COLOR_CASILLAS = "#F5CF27"  #amarillo
+        COLOR_BOTONES = "#F5A4D1"  #rosa clarito
+        COLOR_CAMPOS = "#D7ECFF"   #azul clarito
+        COLOR_CASILLAS = "#F5A4D1"  #rosa clarito
 
 
         self.ventana.configure(bg=COLOR_FONDO)
