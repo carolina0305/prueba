@@ -1,187 +1,115 @@
-import tkinter as tk
-from tkinter import messagebox
-import sqlite3
-
-class App:
-
-    def __init__(self, ventana):
-        self.ventana = ventana
-        self.ventana.title("Gestor de Tiendas")
-        self.ventana.geometry("700x400")
-
-        #  Color de fondo general 
-        COLOR_FONDO = "#D7ECFF"   # azul clarito
-        COLOR_BOTONES = "#F5A4D1"  #rosa clarito
-        COLOR_CAMPOS = "#D7ECFF"   #azul clarito
-        COLOR_CASILLAS = "#F5A4D1"  #rosa clarito
-
-
-        self.ventana.configure(bg=COLOR_FONDO)
-
-        # Base de datos 
-        self.conexion = sqlite3.connect("tiendas.db")
+class DatabaseManager:
+    def __init__(self, db_path='tiendas.db'):
+        self.conexion = sqlite3.connect(db_path)
         self.cursor = self.conexion.cursor()
         self.crear_tabla()
 
-        # Frames
-        frame_form = tk.Frame(ventana, pady=10, bg=COLOR_FONDO)
-        frame_form.pack()
-
-        frame_bot = tk.Frame(ventana, pady=10, bg=COLOR_FONDO)
-        frame_bot.pack()
-
-        frame_lista = tk.Frame(ventana, bg=COLOR_FONDO)
-        frame_lista.pack(fill=tk.BOTH, expand=True)
-
-        # Campos 
-        tk.Label(frame_form, text="Nombre:", bg=COLOR_CAMPOS).pack(anchor="w")
-        self.campo_nombre = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
-        self.campo_nombre.pack()
-
-        tk.Label(frame_form, text="Horario:", bg=COLOR_CAMPOS).pack(anchor="w")
-        self.campo_horario = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
-        self.campo_horario.pack()
-
-        tk.Label(frame_form, text="Ubicación:", bg=COLOR_CAMPOS).pack(anchor="w")
-        self.campo_ubicacion = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
-        self.campo_ubicacion.pack()
-
-        tk.Label(frame_form, text="Trabajadores:", bg=COLOR_CAMPOS).pack(anchor="w")
-        self.campo_trab = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
-        self.campo_trab.pack()
-
-        # Botones 
-        tk.Button(frame_bot, text="Añadir", command=self.añadir, bg=COLOR_BOTONES).grid(row=0, column=0, padx=10)
-        tk.Button(frame_bot, text="Modificar", command=self.modificar, bg=COLOR_BOTONES).grid(row=0, column=1, padx=10)
-        tk.Button(frame_bot, text="Eliminar", command=self.eliminar, bg=COLOR_BOTONES).grid(row=0, column=2, padx=10)
-        # Lista
-        tk.Label(frame_lista, text="Tiendas registradas:", bg=COLOR_FONDO).pack(anchor="w")
-        
-        self.lista = tk.Listbox(frame_lista, width=70, height=10)
-        self.lista.pack(fill=tk.BOTH, expand=True)
-        self.lista.bind("<<ListboxSelect>>", self.cargar_seleccion)
-
-        # Cargar lista al iniciar
-        self.actualizar_lista()
-
-    
-    # BASE DE DATOS
-
     def crear_tabla(self):
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Tienda (
-                id INTEGER PRIMARY KEY,
-                nombre TEXT NOT NULL,
-                horario TEXT,
-                ubicacion TEXT,
-                trabajadores TEXT
-            )
+        CREATE TABLE IF NOT EXISTS Tienda (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            horario TEXT,
+            ubicacion TEXT,
+            completada INTEGER DEFAULT 0
+        )
         """)
         self.conexion.commit()
 
-    
-    # FUNCIONES CRUD
-   
-    def añadir(self):
-        nombre = self.campo_nombre.get().strip()
-        horario = self.campo_horario.get().strip()
-        ubicacion = self.campo_ubicacion.get().strip()
-        trab = self.campo_trab.get().strip()
-
-        if not nombre:
-            messagebox.showwarning("Error", "El nombre no puede estar vacío.")
-            return
-
+    def añadir_tienda(self, nombre, horario, ubicacion):
         self.cursor.execute(
-            "INSERT INTO Tienda (nombre, horario, ubicacion, trabajadores) VALUES (?, ?, ?, ?)",
-            (nombre, horario, ubicacion, trab)
+            "INSERT INTO Tienda (nombre, horario, ubicacion) VALUES (?, ?, ?)",
+            (nombre, horario, ubicacion)
         )
         self.conexion.commit()
 
-        self.limpiar()
-        self.actualizar_lista()
+    def actualizar_lista(self, termino=None):
+        if termino:
+            t = f"%{termino}%"
+            self.cursor.execute("""
+                SELECT id, nombre, horario, ubicacion, completada
+                FROM Tienda
+                WHERE nombre LIKE ? OR ubicacion LIKE ? OR horario LIKE ?
+                ORDER BY id DESC
+            """, (t, t, t))
+        else:
+            self.cursor.execute("""
+                SELECT id, nombre, horario, ubicacion, completada
+                FROM Tienda
+                ORDER BY id DESC
+            """)
+        return self.cursor.fetchall()
 
-    def modificar(self):
-        id_tienda = self.id_seleccionado()
-        if not id_tienda:
-            messagebox.showinfo("Atención", "Selecciona una tienda.")
-            return
+    def cargar_tienda(self, id_tienda):
+        self.cursor.execute("""
+            SELECT nombre, horario, ubicacion
+            FROM Tienda WHERE id = ?
+        """, (id_tienda,))
+        return self.cursor.fetchone()
 
-        nombre = self.campo_nombre.get()
-        horario = self.campo_horario.get()
-        ubicacion = self.campo_ubicacion.get()
-        trab = self.campo_trab.get()
+    def modificar_tienda(self, tienda_id, nombre, horario, ubicacion):
+        self.cursor.execute("""
+            UPDATE Tienda
+            SET nombre = ?, horario = ?, ubicacion = ?
+            WHERE id = ?
+        """, (nombre, horario, ubicacion, tienda_id))
+        self.conexion.commit()
 
+    def eliminar_tienda(self, tienda_id):
+        self.cursor.execute("DELETE FROM Tienda WHERE id = ?", (tienda_id,))
+        self.conexion.commit()
+
+    def marcar_completada(self, tienda_id):
+        # Obtener estado actual
+        self.cursor.execute("SELECT completada FROM Tienda WHERE id = ?", (tienda_id,))
+        estado_actual = self.cursor.fetchone()[0]
+
+        # Alternar
+        nuevo_estado = 1 if estado_actual == 0 else 0
+
+        # Guardar
         self.cursor.execute(
-            "UPDATE Tienda SET nombre=?, horario=?, ubicacion=?, trabajadores=? WHERE id=?",
-            (nombre, horario, ubicacion, trab, id_tienda)
+            "UPDATE Tienda SET completada = ? WHERE id = ?",
+            (nuevo_estado, tienda_id)
         )
         self.conexion.commit()
 
-        self.limpiar()
-        self.actualizar_lista()
+    def obtener_todas_las_tiendas(self):
+        self.cursor.execute("""
+            SELECT id, nombre, horario, ubicacion, completada
+            FROM Tienda ORDER BY id DESC
+        """)
+        return self.cursor.fetc
+ 
+  def actualizar_lista(self, termino_busqueda=None):
+        if termino_busqueda:
+            # Si nos dan un término de búsqueda, filtramos con LIKE
+            # Ponemos '%' alrededor del término para buscar en cualquier parte
+            termino = f"%{termino_busqueda}%"
+            self.cursor.execute("SELECT ... FROM Tarea WHERE descripcion LIKE ?", (termino,))
+        else:
+            # Si no hay término, seleccionamos todo (como antes)
+            self.cursor.execute("SELECT ... FROM Tarea ORDER BY fecha_limite")
+            
+        tareas = self.cursor.fetchall()
+        return tareas
 
-    def eliminar(self):
-        id_tienda = self.id_seleccionado()
-        if not id_tienda:
-            messagebox.showinfo("Atención", "Selecciona una tienda.")
-            return
+# Este método se llama desde el botón "Buscar"
+    def buscar_tareas(self):
+        termino = self.campo_busqueda.get()
+        self.actualizar_lista_gui(termino) # Llamamos al actualizador con el término
 
-        if messagebox.askyesno("Confirmar", "¿Eliminar esta tienda?"):
-            self.cursor.execute("DELETE FROM Tienda WHERE id=?", (id_tienda,))
-            self.conexion.commit()
+    # Este método se llama desde el botón "Limpiar"
+    def limpiar_busqueda(self):
+        self.campo_busqueda.delete(0, tk.END)
+        self.actualizar_lista_gui() # Llamamos al actualizador sin término
 
-            self.limpiar()
-            self.actualizar_lista()
-
-    
-    # LISTA / SELECCIÓN
-    
-    def actualizar_lista(self):
-        self.lista.delete(0, tk.END)
-
-        self.cursor.execute("SELECT * FROM Tienda")
-        for id_, nom, hor, ubi, trab in self.cursor.fetchall():
-            texto = f"{id_}: {nom} — {hor} — {ubi} — Trabajadores: {trab}"
-            self.lista.insert(tk.END, texto)
-
-    def id_seleccionado(self):
-        try:
-            texto = self.lista.get(self.lista.curselection())
-            return int(texto.split(":")[0])
-        except:
-            return None
-
-    def cargar_seleccion(self, event):
-        id_tienda = self.id_seleccionado()
-        if not id_tienda:
-            return
-
-        self.cursor.execute("SELECT nombre, horario, ubicacion, trabajadores FROM Tienda WHERE id=?", (id_tienda,))
-        tienda = self.cursor.fetchone()
-
-        if tienda:
-            nombre, horario, ubicacion, trab = tienda
-            self.campo_nombre.delete(0, tk.END)
-            self.campo_horario.delete(0, tk.END)
-            self.campo_ubicacion.delete(0, tk.END)
-            self.campo_trab.delete(0, tk.END)
-
-            self.campo_nombre.insert(0, nombre)
-            self.campo_horario.insert(0, horario)
-            self.campo_ubicacion.insert(0, ubicacion)
-            self.campo_trab.insert(0, trab)
-
-    def limpiar(self):
-        self.campo_nombre.delete(0, tk.END)
-        self.campo_horario.delete(0, tk.END)
-        self.campo_ubicacion.delete(0, tk.END)
-        self.campo_trab.delete(0, tk.END)
-        self.lista.selection_clear(0, tk.END)
-
-
-# Lanzar app
-if __name__ == "__main__":
-    root = tk.Tk()
-    App(root)
-    root.mainloop()
+    # Modificamos el actualizador de la GUI para que pase el término
+    def actualizar_lista_gui(self, termino_busqueda=None):
+        self.lista_tareas.delete(0, tk.END)
+        
+        # Pedimos los datos (filtrados o no) al gestor de la BD
+        tareas = self.db.actualizar_lista(termino_busqueda)
+        
+        for tarea in tareas:
+            # ... (el mismo bucle 'for' que ya teníais) ...
