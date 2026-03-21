@@ -1,3 +1,5 @@
+import sqlite3
+
 class DatabaseManager:
     def __init__(self, db_path='tiendas.db'):
         self.conexion = sqlite3.connect(db_path)
@@ -79,5 +81,4 @@ class DatabaseManager:
             SELECT id, nombre, horario, ubicacion, completada
             FROM Tienda ORDER BY id DESC
         """)
-        return self.cursor.fetc
- 
+        return self.cursor.fetchall() 
