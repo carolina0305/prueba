@@ -25,7 +25,7 @@ class App:
         self.cursor = self.conexion.cursor()
         self.crear_tabla()
 
-        # MENÚ
+        # Menu
         self.barra_menu = tk.Menu(self.ventana)
         self.ventana.config(menu=self.barra_menu)
 
@@ -40,7 +40,7 @@ class App:
         self.barra_menu.add_cascade(label="Ayuda", menu=menu_ayuda)
         menu_ayuda.add_command(label="Acerca de...", command=self.mostrar_acerca_de)
 
-        # FRAMES
+        # Frame
         frame_form = tk.Frame(self.ventana, pady=10, bg=COLOR_FONDO)
         frame_form.pack()
 
@@ -50,7 +50,7 @@ class App:
         frame_lista = tk.Frame(self.ventana, bg=COLOR_FONDO)
         frame_lista.pack(fill=tk.BOTH, expand=True)
 
-        # CAMPOS
+        # Campos
         tk.Label(frame_form, text="Nombre:", bg=COLOR_CAMPOS).pack(anchor="w")
         self.campo_nombre = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
         self.campo_nombre.pack()
@@ -67,17 +67,17 @@ class App:
         self.campo_trab = tk.Entry(frame_form, width=40, bg=COLOR_CASILLAS)
         self.campo_trab.pack()
 
-        tk.Label(frame_form, text="Prioridad:", bg=COLOR_CAMPOS).pack(anchor="w")
-        self.combo_prio = ttk.Combobox(frame_form, values=["Baja", "Media", "Alta"], state="readonly")
-        self.combo_prio.pack(fill=tk.X)
-        self.combo_prio.current(1)
+        tk.Label(frame_form, text="Favoritas:", bg=COLOR_CAMPOS).pack(anchor="w")
+        self.combo_favo = ttk.Combobox(frame_form, values=["Poco", "Medio", "Mucho"], state="readonly")
+        self.combo_favo.pack(fill=tk.X)
+        self.combo_favo.current(1)
 
-        # BOTONES
+        # Botones
         tk.Button(frame_bot, text="Añadir", command=self.añadir, bg=COLOR_BOTONES).grid(row=0, column=0, padx=10)
         tk.Button(frame_bot, text="Modificar", command=self.modificar, bg=COLOR_BOTONES).grid(row=0, column=1, padx=10)
         tk.Button(frame_bot, text="Eliminar", command=self.eliminar, bg=COLOR_BOTONES).grid(row=0, column=2, padx=10)
 
-        # LISTA
+        # Lista
         tk.Label(frame_lista, text="Tiendas registradas:", bg=COLOR_FONDO).pack(anchor="w")
         self.lista = tk.Listbox(frame_lista, width=70, height=10)
         self.lista.pack(fill=tk.BOTH, expand=True)
@@ -85,9 +85,7 @@ class App:
 
         self.actualizar_lista()
 
-    # ========================
-    # JSON
-    # ========================
+    # Json
     def exportar_json(self):
         self.cursor.execute("SELECT * FROM Tienda")
         tiendas = self.cursor.fetchall()
@@ -101,7 +99,7 @@ class App:
                 "horario": datos[2],
                 "ubicacion": datos[3],
                 "trabajadores": datos[4],
-                "prioridad": datos[5]
+                "favoritas": datos[5]
             })
 
         try:
@@ -118,13 +116,13 @@ class App:
 
             for t in datos:
                 self.cursor.execute(
-                    "INSERT INTO Tienda (nombre, horario, ubicacion, trabajadores, prioridad) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO Tienda (nombre, horario, ubicacion, trabajadores, favoritas) VALUES (?, ?, ?, ?, ?)",
                     (
                         t.get("nombre", ""),
                         t.get("horario", ""),
                         t.get("ubicacion", ""),
                         t.get("trabajadores", ""),
-                        t.get("prioridad", "Media")
+                        t.get("favoritas", "Medio")
                     )
                 )
 
@@ -137,9 +135,7 @@ class App:
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-    # ========================
-    # BASE DE DATOS
-    # ========================
+    # Base de datos
     def crear_tabla(self):
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS Tienda (
@@ -148,14 +144,13 @@ class App:
                 horario TEXT,
                 ubicacion TEXT,
                 trabajadores TEXT,
-                prioridad TEXT
+                favoritas TEXT
             )
         """)
         self.conexion.commit()
 
-    # ========================
-    # CRUD
-    # ========================
+    # Crud
+
     def añadir(self):
         nombre = self.campo_nombre.get().strip()
         if not nombre:
@@ -163,8 +158,8 @@ class App:
             return
 
         self.cursor.execute(
-            "INSERT INTO Tienda (nombre, horario, ubicacion, trabajadores, prioridad) VALUES (?, ?, ?, ?, ?)",
-            (nombre, self.campo_horario.get(), self.campo_ubicacion.get(), self.campo_trab.get(), self.combo_prio.get())
+            "INSERT INTO Tienda (nombre, horario, ubicacion, trabajadores, favoritas) VALUES (?, ?, ?, ?, ?)",
+            (nombre, self.campo_horario.get(), self.campo_ubicacion.get(), self.campo_trab.get(), self.combo_favo.get())
         )
         self.conexion.commit()
         self.limpiar()
@@ -176,9 +171,9 @@ class App:
             return
 
         self.cursor.execute(
-            "UPDATE Tienda SET nombre=?, horario=?, ubicacion=?, trabajadores=?, prioridad=? WHERE id=?",
+            "UPDATE Tienda SET nombre=?, horario=?, ubicacion=?, trabajadores=?, favoritas=? WHERE id=?",
             (self.campo_nombre.get(), self.campo_horario.get(), self.campo_ubicacion.get(),
-             self.campo_trab.get(), self.combo_prio.get(), id_)
+             self.campo_trab.get(), self.combo_favo.get(), id_)
         )
         self.conexion.commit()
         self.limpiar()
@@ -194,10 +189,8 @@ class App:
             self.conexion.commit()
             self.limpiar()
             self.actualizar_lista()
+    # Lista
 
-    # ========================
-    # LISTA
-    # ========================
     def actualizar_lista(self):
         self.lista.delete(0, tk.END)
         self.cursor.execute("SELECT * FROM Tienda")
@@ -237,19 +230,18 @@ class App:
         self.campo_horario.insert(0, datos[2])
         self.campo_ubicacion.insert(0, datos[3])
         self.campo_trab.insert(0, datos[4])
-        self.combo_prio.set(datos[5])
+        self.combo_favo.set(datos[5])
 
     def limpiar(self):
         self.campo_nombre.delete(0, tk.END)
         self.campo_horario.delete(0, tk.END)
         self.campo_ubicacion.delete(0, tk.END)
         self.campo_trab.delete(0, tk.END)
-        self.combo_prio.current(1)
+        self.combo_favo.current(1)
         self.lista.selection_clear(0, tk.END)
 
-    # ========================
-    # ACERCA DE
-    # ========================
+  
+    # Acerca de
     def mostrar_acerca_de(self):
         top = tk.Toplevel(self.ventana)
         top.title("Acerca de")
@@ -257,7 +249,7 @@ class App:
         tk.Button(top, text="Cerrar", command=top.destroy).pack()
 
 
-# MAIN
+# Main
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
